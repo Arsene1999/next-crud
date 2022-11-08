@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Botao from '../components/Botao';
 import Formulario from '../components/Formulario';
 import Layout from '../components/Layout';
@@ -6,32 +6,59 @@ import Tabela from '../components/Tabela';
 import Cliente from "../core/Cliente"
 
 
-export default function Home() {
+interface ClientesBack{
+  name: string,
+  idade: number,
+  id: string,
+}
+interface PropsHome {
+  data: ClientesBack[],
+}
+
+export async function getServerSideProps() {
+  console.log('[Server] gerando props para o componente...');
+  const resp = await fetch('http://localhost:3000/api/hello');
+  const data = await resp.json();
+
+  return {
+      props: 
+          data
+  }
+}
+
+
+export default function Home(props: PropsHome) {
 
   const [visivel, setVisivel] = useState<'tabela' | 'form'>('tabela')
   const [clienteSele, setClienteSele] = useState(Cliente.vazio());
-  
-  const clientes = [
-    new Cliente('Ana', 31, '1'),
-    new Cliente('Bia', 45, '2'),
-    new Cliente('Carlos', 34, '3'),
-    new Cliente('Pedro', 23, '4')
-  ];
+  const [clientes, setClientes] = useState<Cliente[]>([]);
 
   function clienteSelecionado(cliente: Cliente) {
-    console.log(`Adicionado ${cliente.nome}`);
+    // console.log(`Selecionado ${cliente.nome}`);
     setClienteSele(cliente);
     setVisivel('form');
   }
 
   function clienteExcluido(cliente: Cliente) {
-    console.log(`Excluido ${cliente.nome}`);
+    // console.log(`Excluido ${cliente.nome}`);
+    let excCl = clientes.filter(aux => aux.nome !== cliente.nome);
+    setClientes(excCl);
   }
 
   function salvarCliente(cliente: Cliente) {
-    console.log(cliente);
+    console.log(`Adicionado ${cliente.nome}`);
+    setClientes([...clientes, cliente]);
+    setVisivel('tabela');
   }
 
+  useEffect(() => {
+    const newData = props.data.map(t => {
+      return new Cliente(t?.name, t?.idade, t?.id);
+    });
+
+    setClientes(newData);
+  },[]);
+  
   return (
     <div className="
       flex justify-center items-center h-screen
@@ -46,7 +73,10 @@ export default function Home() {
                   <Botao 
                     cor="green" 
                     className="mb-4" 
-                    onClick={() => setVisivel('form')}
+                    onClick={() => {
+                      setClienteSele(Cliente.vazio());
+                      setVisivel('form');
+                    }}
                     >Novo Cliente</Botao>
                 </div>
                 <Tabela 

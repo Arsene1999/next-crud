@@ -2,6 +2,8 @@ import { useState } from "react";
 import Cliente from "../core/Cliente";
 import Botao from "./Botao";
 import Entrada from "./Entrada";
+import { v4 as uuidv4 } from "uuid";
+
 
 interface FormularioProps {
     cliente: Cliente,
@@ -11,9 +13,11 @@ interface FormularioProps {
 
 export default function Formulario(props: FormularioProps) {
     const id = props.cliente?.id;
+    const id2 = uuidv4();
     const [nome, setNome] = useState(props.cliente?.nome ?? '');
     const [idade, setIdade] = useState(props.cliente?.idade ?? 0);
     
+
     return(
         <div>
             {id 
@@ -22,12 +26,21 @@ export default function Formulario(props: FormularioProps) {
             <Entrada texto="Nome" valor={nome} valorMudou={setNome} className="mb-2"/>
             <Entrada texto="Idade" tipo="number" valor={idade} valorMudou={setIdade}/>
             <div className="flex justify-end mt-4">
-                <Botao 
+            {id ?
+                    <Botao 
+                        cor="blue" 
+                        onClick={() => props.clienteMudou?.(new Cliente(nome,idade,id))}
+                        >
+                        Alterar
+                    </Botao> 
+                : 
+                    <Botao 
                     cor="blue" 
-                    onClick={() => props.clienteMudou?.(new Cliente(nome,idade,id))}
+                    onClick={() => props.clienteMudou?.(new Cliente(nome,idade, id2))}
                     >
-                    {id ? 'Alterar' : 'Salvar'}
-                </Botao>
+                        Salvar
+                    </Botao>
+                }
                 <Botao cor="gray" className="mr-3" onClick={props.cancelado}>
                     Cancelar
                 </Botao>
