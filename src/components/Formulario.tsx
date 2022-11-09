@@ -11,9 +11,10 @@ interface FormularioProps {
     cancelado?: () => void
 }
 
+
 export default function Formulario(props: FormularioProps) {
     const id = props.cliente?.id;
-    const id2 = uuidv4();
+    const id2 =  uuidv4();
     const [nome, setNome] = useState(props.cliente?.nome ?? '');
     const [idade, setIdade] = useState(props.cliente?.idade ?? 0);
     

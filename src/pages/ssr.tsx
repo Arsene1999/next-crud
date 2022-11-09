@@ -4,52 +4,51 @@ import Formulario from '../components/Formulario';
 import Layout from '../components/Layout';
 import Tabela from '../components/Tabela';
 import Cliente from "../core/Cliente"
-import api from '../services/apiFetch';
 import { ClientesBack } from '../types';
 
 
 interface PropsHome {
-  data: {
-    data: ClientesBack[],
-  }
+  data: ClientesBack[],
 }
 
-export async function getStaticProps() {
-  console.log('[SSG] gerando props para o componente...');
+export async function getServerSideProps() {
+  console.log('[SSR] gerando props para o componente...');
+  const resp = await fetch('http://localhost:3000/api/users');
+  const data = await resp.json();
 
-  const data = await api.users.fetch();
-  
   return {
-      revalidate: 10,
-      props: {
+      props: 
           data
-      }
   }
 }
 
-export default function Home({data}: PropsHome) {
+
+export default function SSR(props: PropsHome) {
 
   const [visivel, setVisivel] = useState<'tabela' | 'form'>('tabela')
   const [clienteSele, setClienteSele] = useState(Cliente.vazio());
   const [clientes, setClientes] = useState<Cliente[]>([]);
 
   function clienteSelecionado(cliente: Cliente) {
+    // console.log(`Selecionado ${cliente.nome}`);
     setClienteSele(cliente);
     setVisivel('form');
   }
 
   function clienteExcluido(cliente: Cliente) {
+    // console.log(`Excluido ${cliente.nome}`);
     let excCl = clientes.filter(aux => aux.nome !== cliente.nome);
     setClientes(excCl);
   }
 
   function salvarCliente(cliente: Cliente) {
+    console.log(`Adicionado ${cliente.nome}`);
     setClientes([...clientes, cliente]);
     setVisivel('tabela');
   }
 
   useEffect(() => {
-    const newData = data.data.map(t => {
+    const newData = props.data.map(t => {
       return new Cliente(t?.name, t?.idade, t?.id);
     });
 
@@ -62,7 +61,7 @@ export default function Home({data}: PropsHome) {
       bg-gradient-to-r from-blue-500 to-purple-500
       text-white
     ">
-    <Layout titulo="Cadastro Simples - SSG" >
+    <Layout titulo="Cadastro Simples - SSR" >
       {visivel === 'tabela' 
         ? (
               <>
